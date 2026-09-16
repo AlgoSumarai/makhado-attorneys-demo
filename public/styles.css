@@ -383,7 +383,7 @@ em {
   padding: 42px 0 46px;
   border-top: 1px solid var(--navy-light);
   border-bottom: 1px solid var(--navy-light);
-  background: var(--paper);
+  background: var(--white);
 }
 
 .clients-heading {
