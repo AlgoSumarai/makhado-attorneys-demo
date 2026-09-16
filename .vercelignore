@@ -1,0 +1,9 @@
+.git
+.kilo
+.env
+.env.*
+node_modules
+dist
+test-results
+tests
+deployment.md
