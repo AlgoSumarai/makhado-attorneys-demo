@@ -1,4 +1,4 @@
-import { mkdir, writeFile, cp, readFile } from 'node:fs/promises';
+import { mkdir, writeFile, cp, readFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
 import nodeProcess from 'node:process';
@@ -15,6 +15,7 @@ const assetVersion = createHash('sha256')
   .digest('hex')
   .slice(0, 12);
 await mkdir('dist', { recursive: true });
+await rm('dist/fees', { recursive: true, force: true });
 await sharp('public/images/logo-original.png')
   .resize({ width: 640 })
   .webp({ quality: 92 })
@@ -71,7 +72,7 @@ const nav = [
   ['/about', 'About'],
   ['/services', 'Services'],
   ['/our-process', 'Our Process'],
-  ['/fees', 'Fees'],
+  ['/our-clients', 'Our clients'],
   ['/contact', 'Contact'],
 ];
 function header(path) {
@@ -143,24 +144,68 @@ function heading(k, h, p = '') {
   </div>`;
 }
 function cards() {
-  return /* HTML */ `<div class="service-grid">
-    ${services
-      .map(
-        (s, i) =>
-          /* HTML */ `<article class="service-card reveal">
-            <div class="card-top">${icon(s.icon)}<span>0${i + 1}</span></div>
-            <h3><a href="/services/${s.slug}">${s.name}</a></h3>
-            <p>${s.short}</p>
-            <div class="card-links">
-              ${link('/services/' + s.slug, 'Learn more', 'text-link')}<a
-                href="/services/${s.slug}#inquiry"
-                >Send inquiry</a
-              >
-            </div>
-          </article>`,
-      )
-      .join('')}
-  </div>`;
+  return /* HTML */ `<div
+      class="service-search"
+      role="search"
+      aria-label="Find a legal service"
+      hidden
+    >
+      <label for="service-search">Search our services</label>
+      <div class="service-search-field">
+        <svg
+          class="service-search-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m15.5 15.5 4.5 4.5" />
+        </svg>
+        <input
+          id="service-search"
+          type="search"
+          placeholder="Try family law, property or employment"
+          aria-controls="service-results"
+          aria-describedby="service-search-status"
+        />
+      </div>
+      <p id="service-search-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    </div>
+    <div class="service-search-empty" hidden>
+      <h3>Can’t find the service you need?</h3>
+      <p>
+        No listed services match your search. Send an enquiry about your legal needs and we’ll help
+        you understand whether we can assist.
+      </p>
+      ${link('/contact#inquiry', 'Send an enquiry')}
+    </div>
+    <div class="service-grid" id="service-results">
+      ${services
+        .map(
+          (s, i) =>
+            /* HTML */ `<article
+              class="service-card reveal"
+              data-service-search="${[s.name, s.short, s.intro, s.overview, ...s.matters].join(' ').replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}"
+            >
+              <div class="card-top">
+                ${icon(s.icon)}<span>${String(i + 1).padStart(2, '0')}</span>
+              </div>
+              <h3><a href="/services/${s.slug}">${s.name}</a></h3>
+              <p>${s.short}</p>
+              <div class="card-links">
+                ${link('/services/' + s.slug, 'Learn more', 'text-link')}<a
+                  href="/services/${s.slug}#inquiry"
+                  >Send inquiry</a
+                >
+              </div>
+            </article>`,
+        )
+        .join('')}
+    </div>`;
 }
 function process() {
   return /* HTML */ `<div class="process-grid">
@@ -348,7 +393,7 @@ function clientMarquee() {
     <section class="clients-section" aria-labelledby="clients-heading">
       <div class="container clients-heading">
         <span class="tiny-line" aria-hidden="true"></span>
-        <h2 id="clients-heading">Our clients</h2>
+        <h2 id="clients-heading"><a href="/our-clients">Our clients ${arrow}</a></h2>
       </div>
       <div class="clients-marquee">
         <div class="clients-track">
@@ -461,23 +506,6 @@ const home = () =>
         </div>
       </div>
     </section>
-    <section class="fees-preview paper">
-      <div class="container heading-row">
-        <div>
-          ${eyebrow('CLARITY FROM THE OUTSET')}
-          <h2>Considered advice.<br /><em>Transparent fees.</em></h2>
-          <p>Understand the cost of your legal support before the next step.</p>
-          ${link('/fees', 'Explore our fee structure', 'text-link dark-link')}
-        </div>
-        <div class="fee-highlight">
-          <span>INITIAL CONSULTATION</span><strong>R2,500<span> / up to 60 minutes</span></strong>
-          <p>
-            A focused conversation about your legal needs.<br />Payable upon consultation. All fees
-            in ZAR.
-          </p>
-        </div>
-      </div>
-    </section>
     ${cta()}`;
 const about = () =>
   /* HTML */ `${pageHero('ABOUT OUR FIRM', 'Grounded in integrity.<br><em>Focused on people.</em>', 'Professional legal assistance, delivered with care, clarity and a commitment to ethical practice.')}
@@ -554,6 +582,39 @@ const about = () =>
       </div>
     </section>
     ${cta()}`;
+const clientsPage = () =>
+  /* HTML */ `${pageHero('OUR CLIENTS', 'Relationships built<br>on <em>understanding.</em>', 'Our approach starts with listening, understanding your priorities and providing considered legal support.')}
+    <section class="section paper" aria-labelledby="client-directory-heading">
+      <div class="container">
+        <div class="section-heading">
+          ${eyebrow('WHO WE WORK WITH')}
+          <h2 id="client-directory-heading">Our clients</h2>
+        </div>
+        <div class="client-directory">
+          ${clients
+            .map(
+              (client) =>
+                /* HTML */ `<article class="client-profile">
+                  <div class="client-profile-logo">
+                    <img
+                      src="${client.logo}"
+                      alt="${client.name} logo"
+                      width="244"
+                      height="80"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="client-profile-copy">
+                    <h3>${client.name}</h3>
+                    ${link(client.website, 'Visit website', 'text-link dark-link')}
+                  </div>
+                </article>`,
+            )
+            .join('')}
+        </div>
+      </div>
+    </section>
+    ${cta()}`;
 const servicesPage = () =>
   /* HTML */ `${pageHero('OUR PRACTICE AREAS', 'Clear advice.<br><em>Considered solutions.</em>', 'Legal assistance shaped around your circumstances, your responsibilities and your next step.')}
     <section class="section paper">
@@ -617,58 +678,12 @@ const processPage = () =>
                   <h2>${t}</h2>
                   <p>${d}</p>
                   <p>
-                    ${['Bring a brief summary of your matter, relevant documents and any known dates or deadlines. This helps us understand the context and discuss whether we can assist.', 'We consider the relevant facts and documents, discuss the available options and explain the proposed scope of work and fees before proceeding.', 'The steps depend on your matter and may include drafting, reviewing documents, negotiation or representation. We keep the agreed objectives in view.', 'As your matter develops, we consider whether the approach needs to change and discuss any further assistance that may be appropriate.'][i]}
+                    ${['Bring a brief summary of your matter, relevant documents and any known dates or deadlines. This helps us understand the context and discuss whether we can assist.', 'We consider the relevant facts and documents, discuss the available options and explain the proposed scope of work before proceeding.', 'The steps depend on your matter and may include drafting, reviewing documents, negotiation or representation. We keep the agreed objectives in view.', 'As your matter develops, we consider whether the approach needs to change and discuss any further assistance that may be appropriate.'][i]}
                   </p>
                 </div>
               </article>`,
           )
           .join('')}${link('/contact?type=consultation', 'Discuss your matter with us')}
-      </div>
-    </section>
-    ${cta()}`;
-const fees = () =>
-  /* HTML */ `${pageHero('OUR FEES', 'Transparency is part<br>of <em>our commitment.</em>', 'Clear fee structures to help you plan your legal support. All amounts are in South African Rand (ZAR).')}
-    <section class="section paper">
-      <div class="container">
-        <div class="pricing-intro">
-          <article class="pricing-card">
-            ${eyebrow('HOURLY BILLING')}
-            <h2>R1,700<span> per hour</span></h2>
-            <p>For legal work billed according to time spent.</p>
-            <div>Billing occurs in 0.1-hour increments.</div>
-          </article>
-          <article class="pricing-card">
-            ${eyebrow('INITIAL CONSULTATION')}
-            <h2>R2,500<span> up to 60 minutes</span></h2>
-            <p>A focused discussion of your circumstances and legal needs.</p>
-            <div>Consultation fee payable upon consultation.</div>
-          </article>
-        </div>
-        <div class="retainers">
-          ${heading('ONGOING LEGAL SUPPORT', 'A retainer for<br><em>continuing peace of mind.</em>', 'Retainer options are intended for ongoing legal needs and general counsel support.')}
-          <div class="retainer-grid">
-            ${[
-              ['Bronze', '10', '17,000'],
-              ['Silver', '20', '34,000'],
-              ['Gold', '40', '68,000'],
-            ]
-              .map(
-                ([n, h, p]) =>
-                  /* HTML */ `<article class="pricing-card">
-                    <span class="retainer-tier">${n}</span>
-                    <h3>R${p}</h3>
-                    <p>${h} hours of legal support</p>
-                    ${link('/contact?type=consultation', 'Discuss this option', 'text-link dark-link')}
-                  </article>`,
-              )
-              .join('')}
-          </div>
-          <p class="retainer-note">
-            Unused retainer hours may roll over for up to six months. The scope of work and
-            applicable terms will be discussed with you before engagement.
-          </p>
-          ${link('/contact', 'Discuss your requirements')}
-        </div>
       </div>
     </section>
     ${cta()}`;
@@ -735,18 +750,17 @@ const legal = (privacy) =>
                 <p>
                   Browsing this site, sending an inquiry or requesting a consultation does not by
                   itself establish an attorney-client relationship. Any engagement is subject to
-                  acceptance and agreement on the scope of work and fees.
+                  acceptance and agreement on the scope of work.
                 </p>
                 <h2>No guarantee of outcomes</h2>
                 <p>
                   Legal matters depend on their individual facts and circumstances. No statement on
                   this website promises a particular result.
                 </p>
-                <h2>Consultations and fees</h2>
+                <h2>Consultations</h2>
                 <p>
-                  Consultation requests are subject to confirmation. Fees shown are in South African
-                  Rand. The applicable scope, fee terms and any additional costs should be confirmed
-                  with the firm before work begins.
+                  Consultation requests are subject to confirmation. The scope of work and
+                  engagement terms should be agreed with the firm before work begins.
                 </p>
                 <h2>Urgent matters</h2>
                 <p>
@@ -777,21 +791,21 @@ const routes = [
   [
     '/services',
     'Legal Services & Practice Areas',
-    'Explore corporate law, litigation, contract drafting and legal consultation services.',
+    'Explore our legal services for businesses, individuals and families, from corporate and technology law to property, employment and dispute resolution.',
     servicesPage,
   ],
   ...services.map((s) => ['/services/' + s.slug, s.name, s.intro, () => servicePage(s)]),
+  [
+    '/our-clients',
+    'Our clients',
+    'Meet the clients of Makhado & Associates and learn about our approach to professional legal support.',
+    clientsPage,
+  ],
   [
     '/our-process',
     'Our Process',
     'Understand our approach from initial consultation through assessment, action and follow-up.',
     processPage,
-  ],
-  [
-    '/fees',
-    'Fees & Retainers',
-    'Review hourly billing, initial consultation fees and retainer options in South African Rand.',
-    fees,
   ],
   [
     '/contact',

@@ -383,7 +383,7 @@ em {
   padding: 42px 0 46px;
   border-top: 1px solid var(--navy-light);
   border-bottom: 1px solid var(--navy-light);
-  background: var(--white);
+  background: var(--navy-light);
 }
 
 .clients-heading {
@@ -399,6 +399,36 @@ em {
   letter-spacing: -0.5px;
 }
 
+.client-directory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 400px));
+  gap: 30px;
+  margin-top: 40px;
+}
+.client-profile {
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.client-profile-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 30px;
+  background: var(--navy-light);
+}
+.client-profile-logo img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.client-profile-copy {
+  padding: 28px;
+}
+.client-profile-copy h3 {
+  font-size: 28px;
+  margin-bottom: 18px;
+}
 .clients-marquee {
   overflow: hidden;
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
@@ -491,6 +521,60 @@ em {
 .heading-row > .text-link {
   flex: none;
   margin-bottom: 6px;
+}
+.service-search {
+  margin: 0 auto 30px;
+  max-width: 680px;
+  text-align: center;
+}
+.service-search-field {
+  position: relative;
+}
+.service-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  color: #5f696e;
+  pointer-events: none;
+}
+.service-search label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.service-search input {
+  width: 100%;
+  padding: 16px 16px 16px 50px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font-size: 16px;
+}
+.service-search input::placeholder {
+  color: #5f696e;
+}
+.service-search p {
+  margin-top: 12px;
+  font-size: 13px;
+}
+.service-search-empty {
+  padding: 30px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.service-search-empty h3 {
+  font-size: 30px;
+}
+.service-search-empty p {
+  max-width: 650px;
+  margin: 18px 0 24px;
+}
+.service-card[hidden] {
+  display: none;
 }
 .service-grid {
   display: grid;
@@ -654,45 +738,6 @@ em {
   color: #a58a58;
   font-size: 10px;
   padding-top: 4px;
-}
-.fees-preview {
-  padding: 75px 0;
-}
-.fees-preview .heading-row {
-  margin-bottom: 0;
-  align-items: center;
-}
-.fees-preview h2 {
-  font-size: 43px;
-}
-.fees-preview p {
-  font-size: 12px;
-  margin: 23px 0;
-}
-.fee-highlight {
-  border-left: 1px solid var(--border);
-  padding: 25px 0 25px 80px;
-  min-width: 45%;
-}
-.fee-highlight > span {
-  letter-spacing: 2px;
-  font-size: 9px;
-  color: #8c7045;
-}
-.fee-highlight strong {
-  display: block;
-  font-family: var(--serif);
-  font-size: 49px;
-  font-weight: 400;
-  margin-top: 14px;
-}
-.fee-highlight strong span {
-  font-family: var(--sans);
-  font-size: 11px;
-  color: #5f696e;
-}
-.fee-highlight p {
-  margin-bottom: 0;
 }
 .cta {
   background: var(--navy-light);
@@ -898,65 +943,6 @@ em {
 }
 .long-process > .button {
   margin: 25px 0 0 155px;
-}
-.pricing-intro {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-}
-.pricing-card {
-  border: 1px solid var(--border);
-  padding: 38px;
-  background: #fff;
-}
-.pricing-card h2 {
-  font-size: 49px;
-}
-.pricing-card h2 span {
-  display: block;
-  font-size: 12px;
-  font-family: var(--sans);
-  letter-spacing: 0;
-  color: var(--muted);
-  margin-top: 15px;
-}
-.pricing-card p {
-  font-size: 12px;
-  margin-top: 25px;
-}
-.pricing-card > div {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--muted);
-}
-.retainers {
-  margin-top: 90px;
-}
-.retainer-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
-  margin-top: 40px;
-}
-.retainer-tier {
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 11px;
-  color: #8c7045;
-}
-.retainer-grid h3 {
-  font-size: 43px;
-  margin-top: 25px;
-}
-.retainer-grid .text-link {
-  margin-top: 30px;
-}
-.retainer-note {
-  font-size: 12px;
-  margin: 30px 0;
-  max-width: 800px;
 }
 .inquiry-layout {
   display: grid;
@@ -1281,16 +1267,6 @@ input::file-selector-button {
   .footer-brand {
     grid-row: span 1;
   }
-  .fee-highlight {
-    padding-left: 40px;
-  }
-  .fee-highlight strong {
-    font-size: 42px;
-  }
-  .fee-highlight strong span {
-    display: block;
-    margin-top: 10px;
-  }
   .two-columns,
   .vision-grid {
     gap: 50px;
@@ -1309,12 +1285,6 @@ input::file-selector-button {
   }
   .inquiry-layout > .section-heading {
     max-width: 600px;
-  }
-  .pricing-card {
-    padding: 28px;
-  }
-  .retainer-grid {
-    gap: 15px;
   }
   .cta h2 {
     font-size: 41px;
@@ -1471,22 +1441,6 @@ input::file-selector-button {
   .audience-photo {
     height: 290px;
   }
-  .fees-preview {
-    padding: 60px 0;
-  }
-  .fees-preview h2 {
-    font-size: 37px;
-  }
-  .fee-highlight {
-    border-left: 0;
-    border-top: 1px solid var(--border);
-    margin-top: 32px;
-    padding: 30px 0 0;
-  }
-  .fee-highlight strong span {
-    display: inline;
-    font-size: 10px;
-  }
   .cta {
     padding: 60px 0;
   }
@@ -1584,16 +1538,6 @@ input::file-selector-button {
   .long-process > .button {
     margin-left: 0;
   }
-  .pricing-intro,
-  .retainer-grid {
-    grid-template-columns: 1fr;
-  }
-  .pricing-card {
-    padding: 30px;
-  }
-  .retainers {
-    margin-top: 60px;
-  }
   .inquiry-layout {
     gap: 35px;
   }
@@ -1632,8 +1576,6 @@ input::file-selector-button {
   }
 }
 .eyebrow,
-.fee-highlight > span,
-.retainer-tier,
 .contact-strip > span,
 .editorial-list li span {
   color: #806438;
@@ -1643,9 +1585,6 @@ input::file-selector-button {
 }
 .step-number {
   color: #9e804d;
-}
-.fee-highlight strong span {
-  color: #5f696e;
 }
 .dark-link:hover,
 .service-card .text-link:hover {

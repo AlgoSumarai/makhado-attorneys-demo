@@ -22,6 +22,35 @@ matchMedia('(min-width:901px)').addEventListener('change', (e) => {
   if (e.matches) closeMenu();
 });
 const form = document.querySelector('#inquiry-form');
+const serviceSearch = document.querySelector('#service-search');
+if (serviceSearch) {
+  const cards = [...document.querySelectorAll('[data-service-search]')];
+  const status = document.querySelector('#service-search-status');
+  const empty = document.querySelector('.service-search-empty');
+  const normalize = (value) =>
+    value
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  const index = cards.map((card) => ({ card, text: normalize(card.dataset.serviceSearch) }));
+  const filterServices = () => {
+    const words = normalize(serviceSearch.value).split(' ').filter(Boolean);
+    let count = 0;
+    for (const { card, text } of index) {
+      card.hidden = !words.every((word) => text.includes(word));
+      if (!card.hidden) count++;
+    }
+    empty.hidden = count !== 0;
+    status.textContent = words.length
+      ? `${count} ${count === 1 ? 'service' : 'services'} found.`
+      : `Browse all ${count} services or search for your legal needs.`;
+  };
+  serviceSearch.closest('.service-search').hidden = false;
+  serviceSearch.addEventListener('input', filterServices);
+  serviceSearch.addEventListener('search', filterServices);
+  filterServices();
+}
 if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
   const observer = new IntersectionObserver(
     (entries) => {

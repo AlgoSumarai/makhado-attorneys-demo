@@ -2,6 +2,7 @@ import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
+import { services } from '../src/content.mjs';
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext();
 const page = await context.newPage();
@@ -12,12 +13,9 @@ const paths = [
   '/',
   '/about',
   '/services',
-  '/services/corporate-law',
-  '/services/litigation-dispute-resolution',
-  '/services/contract-legal-drafting',
-  '/services/legal-consultation',
+  ...services.map((service) => '/services/' + service.slug),
   '/our-process',
-  '/fees',
+  '/our-clients',
   '/contact',
   '/privacy',
   '/legal',
@@ -44,6 +42,27 @@ try {
     await page.goto('http://localhost:3000/');
     await page.screenshot({ path: `test-results/home-${width}.png`, fullPage: true });
   }
+  for (const path of ['/', '/services']) {
+    await page.goto('http://localhost:3000' + path);
+    const search = page.getByRole('searchbox', { name: 'Search our services' });
+    await search.fill('  FAMILY law  ');
+    assert.equal(await page.locator('.service-card:not([hidden])').count(), 1);
+    assert.equal(await page.locator('.service-card:not([hidden]) h3').textContent(), 'Family Law');
+    await search.fill('divorce');
+    assert.equal(await page.locator('.service-card:not([hidden]) h3').textContent(), 'Family Law');
+    await search.fill('unlisted-service-xyz');
+    assert.equal(await page.locator('.service-card:not([hidden])').count(), 0);
+    assert.ok(await page.locator('.service-search-empty').isVisible());
+    await page.getByRole('link', { name: 'Send an enquiry', exact: true }).click();
+    assert.ok(page.url().endsWith('/contact#inquiry'));
+    assert.ok(await page.locator('#inquiry-form').isVisible());
+    await page.goto('http://localhost:3000' + path);
+    await search.fill('tax');
+    await search.fill('');
+    assert.equal(await page.locator('.service-card:not([hidden])').count(), services.length);
+    assert.ok(await page.locator('.service-search-empty').isHidden());
+  }
+  await page.goto('http://localhost:3000/');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.menu-toggle').click();
   assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'), 'true');
